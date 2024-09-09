@@ -20,7 +20,6 @@
                 data.forEach(project => {
                     const projectElement = document.createElement('div');
                     projectElement.innerHTML = `<a href="/projects/${project.id}">${project.name}</a>`;
-                    console.log(projectElement)
                     projectsDiv.appendChild(projectElement);
                 });
             });

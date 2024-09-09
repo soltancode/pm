@@ -53,7 +53,6 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
                     const tasksDiv = document.getElementById('tasks');
                     const newTask = document.createElement('div');
                     newTask.innerHTML = `
