@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Detail</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Project Detail - {{ $project->name }}</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <h1>Tasks for Project: {{ $project->name }}</h1>
@@ -20,36 +20,87 @@
 
     <script src="/js/app.js"></script>
     <script>
-        const projectId = {{ $project->id }};
-        
+        const projectId = @json($project->id);
+
         fetch(`/api/projects/${projectId}/tasks`)
-        .then(response => response.json())
-        .then(data => {
-            const tasksDiv = document.getElementById('tasks');
-            data.forEach(task => {
-                const taskElement = document.createElement('div');
-                taskElement.innerHTML = `<p>${task.name} - ${task.status}</p>`;
-                tasksDiv.appendChild(taskElement);
+            .then(response => response.json())
+            .then(data => {
+                const tasksDiv = document.getElementById('tasks');
+                data.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.innerHTML = `
+                    <p>${task.name} - ${task.status}</p>
+                    <button onclick="editTask(${task.id})">Edit</button>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                    <form id="editTaskForm-${task.id}" style="display:none;">
+                        <input type="text" name="name" value="${task.name}" required>
+                        <input type="text" name="description" value="${task.description}">
+                        <button type="submit">Update Task</button>
+                    </form>
+                `;
+                    tasksDiv.appendChild(taskElement);
+                });
             });
-        });
 
         const taskForm = document.getElementById('taskForm');
         taskForm.addEventListener('submit', function (event) {
             event.preventDefault();
             const formData = new FormData(taskForm);
-            
+
             fetch(`/api/projects/${projectId}/tasks`, {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                const tasksDiv = document.getElementById('tasks');
-                const newTask = document.createElement('div');
-                newTask.innerHTML = `<p>${data.name} - ${data.status}</p>`;
-                tasksDiv.appendChild(newTask);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const tasksDiv = document.getElementById('tasks');
+                    const newTask = document.createElement('div');
+                    newTask.innerHTML = `
+                    <p>${data.name} - todo</p>
+                    <button onclick="editTask(${data.id})">Edit</button>
+                    <button onclick="deleteTask(${data.id})">Delete</button>
+                    <form id="editTaskForm-${data.id}" style="display:none;">
+                        <input type="text" name="name" value="${data.name}" required>
+                        <input type="text" name="description" value="${data.description}">
+                        <button type="submit">Update Task</button>
+                    </form>
+                `;
+                    tasksDiv.appendChild(newTask);
+                });
         });
+
+        function editTask(taskId) {
+            const editForm = document.getElementById(`editTaskForm-${taskId}`);
+            editForm.style.display = 'block';
+
+            editForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(editForm);
+
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Task updated successfully!');
+                        location.reload();
+                    });
+            });
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        alert('Task deleted successfully!');
+                        location.reload();
+                    });
+            }
+        }
     </script>
 </body>
 </html>
